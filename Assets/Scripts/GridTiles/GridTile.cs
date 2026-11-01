@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class GridTile : MonoBehaviour
 {
+    public bool walkable = true;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
