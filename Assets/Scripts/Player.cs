@@ -28,7 +28,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        if (moveInput != Vector2.zero && !isMoving)
+        if (moveInput != Vector2.zero && (moveInput.x == 0f || moveInput.y == 0f) && !isMoving)
         {
             int currentTileLayer = currentTile.gameObject.layer;
             currentTile.gameObject.layer = 2;
