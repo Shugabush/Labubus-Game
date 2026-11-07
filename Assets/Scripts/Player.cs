@@ -1,12 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] Rigidbody rb;
-    [SerializeField] InputActionReference moveAction;
     [SerializeField] float moveTime = 0.5f;
     [SerializeField] Vector3 centerOffset = Vector3.zero;
     Vector3 Center => transform.TransformPoint(centerOffset);
@@ -14,16 +13,32 @@ public class Player : MonoBehaviour
     GridTile currentTile;
     Vector2 moveInput = Vector2.zero;
 
+    #region Input Actions
+
+    [SerializeField] InputActionReference moveAction;
+    [SerializeField] InputActionReference interactAction;
+
+    #endregion
+
+    readonly List<InteractableObject> interactableObjects = new List<InteractableObject>();
+    InteractableObject closestInteractableObject = null;
+
     void Awake()
     {
         moveAction.action.performed += OnMoveAction;
         moveAction.action.canceled += OnMoveAction;
+
+        interactAction.action.performed += OnInteractAction;
+        interactAction.action.canceled += OnInteractAction;
     }
 
     void OnDestroy()
     {
         moveAction.action.performed -= OnMoveAction;
         moveAction.action.canceled -= OnMoveAction;
+
+        interactAction.action.performed -= OnInteractAction;
+        interactAction.action.canceled -= OnInteractAction;
     }
 
     void Update()
@@ -32,25 +47,59 @@ public class Player : MonoBehaviour
         {
             int currentTileLayer = currentTile.gameObject.layer;
             currentTile.gameObject.layer = 2;
-            if (Physics.Raycast(Center, new Vector3(moveInput.x, 0f, moveInput.y), out RaycastHit hit) &&
-                hit.transform.TryGetComponent(out GridTile gridTile) && gridTile.walkable)
+            if (Physics.Raycast(Center, new Vector3(moveInput.x, 0f, moveInput.y), out RaycastHit hit, Mathf.Infinity, 1)
+                && hit.transform.TryGetComponent(out GridTile gridTile) && gridTile.walkable)
             {
                 StartCoroutine(MoveToTile(gridTile));
             }
             currentTile.gameObject.layer = currentTileLayer;
         }
+
+        if (interactableObjects.Count > 0)
+        {
+            float closestInteractableDst = Mathf.Infinity;
+            int closestInteractableIndex = 0;
+
+            for (int i = 0; i < interactableObjects.Count; i++)
+            {
+                InteractableObject interactableObject = interactableObjects[i];
+                float dst = Vector3.SqrMagnitude(interactableObject.transform.position - transform.position);
+                if (dst < closestInteractableDst)
+                {
+                    closestInteractableDst = dst;
+                    closestInteractableIndex = i;
+                }
+            }
+            closestInteractableObject = interactableObjects[closestInteractableIndex];
+        }
     }
+
+    #region Input Action Methods
 
     void OnMoveAction(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
     }
 
+    void OnInteractAction(InputAction.CallbackContext context)
+    {
+        if (closestInteractableObject != null)
+        {
+            closestInteractableObject.Interact(context, this);
+        }
+    }
+
+    #endregion
+
     void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out GridTile gridTile))
         {
             currentTile = gridTile;
+        }
+        else if (other.TryGetComponent(out InteractableObject interactableObject))
+        {
+            interactableObjects.Add(interactableObject);
         }
     }
 
