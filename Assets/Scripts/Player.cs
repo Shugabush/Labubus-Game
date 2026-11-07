@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
     #endregion
 
     readonly List<InteractableObject> interactableObjects = new List<InteractableObject>();
-    InteractableObject closestInteractableObject = null;
+    InteractableObject targetInteractableObject = null;
 
     void Awake()
     {
@@ -50,6 +50,8 @@ public class Player : MonoBehaviour
             if (Physics.Raycast(Center, new Vector3(moveInput.x, 0f, moveInput.y), out RaycastHit hit, Mathf.Infinity, 1)
                 && hit.transform.TryGetComponent(out GridTile gridTile) && gridTile.walkable)
             {
+                transform.rotation = Quaternion.LookRotation(gridTile.transform.position - transform.position, Vector3.up);
+                rb.rotation = transform.rotation;
                 StartCoroutine(MoveToTile(gridTile));
             }
             currentTile.gameObject.layer = currentTileLayer;
@@ -58,19 +60,30 @@ public class Player : MonoBehaviour
         if (interactableObjects.Count > 0)
         {
             float closestInteractableDst = Mathf.Infinity;
-            int closestInteractableIndex = 0;
+            float closestInteractableDot = Mathf.Infinity;
+            int targetInteractableIndex = 0;
 
             for (int i = 0; i < interactableObjects.Count; i++)
             {
                 InteractableObject interactableObject = interactableObjects[i];
                 float dst = Vector3.SqrMagnitude(interactableObject.transform.position - transform.position);
-                if (dst < closestInteractableDst)
+                float dot = Vector3.Dot(interactableObject.transform.position - transform.position, transform.forward);
+                if (dot < closestInteractableDot)
+                {
+                    closestInteractableDot = dot;
+                    targetInteractableIndex = i;
+                }
+                else if (dot == closestInteractableDot && dst < closestInteractableDst)
                 {
                     closestInteractableDst = dst;
-                    closestInteractableIndex = i;
+                    targetInteractableIndex = i;
                 }
             }
-            closestInteractableObject = interactableObjects[closestInteractableIndex];
+            targetInteractableObject = interactableObjects[targetInteractableIndex];
+        }
+        else
+        {
+            targetInteractableObject = null;
         }
     }
 
@@ -83,9 +96,9 @@ public class Player : MonoBehaviour
 
     void OnInteractAction(InputAction.CallbackContext context)
     {
-        if (closestInteractableObject != null)
+        if (targetInteractableObject != null)
         {
-            closestInteractableObject.Interact(context, this);
+            targetInteractableObject.Interact(context, this);
         }
     }
 
@@ -108,6 +121,10 @@ public class Player : MonoBehaviour
         if (currentTile != null && currentTile.transform == other.transform)
         {
             currentTile = null;
+        }
+        if (other.TryGetComponent(out InteractableObject interactableObject))
+        {
+            interactableObjects.Remove(interactableObject);
         }
     }
 
