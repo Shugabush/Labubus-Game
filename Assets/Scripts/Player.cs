@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
 
     readonly List<InteractableObject> interactableObjects = new List<InteractableObject>();
     InteractableObject targetInteractableObject = null;
+    [SerializeField] float interactAngleThreshold = 0.7f;
 
     void Awake()
     {
@@ -80,7 +81,10 @@ public class Player : MonoBehaviour
                     targetInteractableIndex = i;
                 }
             }
-            targetInteractableObject = interactableObjects[targetInteractableIndex];
+            if (closestInteractableDot < interactAngleThreshold)
+            {
+                targetInteractableObject = interactableObjects[targetInteractableIndex];
+            }
         }
         else
         {
