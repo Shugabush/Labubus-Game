@@ -66,8 +66,9 @@ public class Player : MonoBehaviour
             for (int i = 0; i < interactableObjects.Count; i++)
             {
                 InteractableObject interactableObject = interactableObjects[i];
-                float dst = Vector3.SqrMagnitude(interactableObject.transform.position - transform.position);
-                float dot = Vector3.Dot(interactableObject.transform.position - transform.position, transform.forward);
+                Vector3 dirToInteractable = Vector3.Normalize(interactableObject.transform.position - transform.position);
+                float dst = Vector3.SqrMagnitude(dirToInteractable);
+                float dot = Vector3.Dot(dirToInteractable, transform.forward);
                 if (dot < closestInteractableDot)
                 {
                     closestInteractableDot = dot;
