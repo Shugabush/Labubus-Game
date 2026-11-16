@@ -60,8 +60,8 @@ public class Player : MonoBehaviour
 
         if (interactableObjects.Count > 0)
         {
-            float closestInteractableDst = Mathf.Infinity;
-            float closestInteractableDot = Mathf.Infinity;
+            float closestInteractableDst = float.MaxValue;
+            float closestInteractableDot = float.MaxValue;
             int targetInteractableIndex = 0;
 
             for (int i = 0; i < interactableObjects.Count; i++)
@@ -70,6 +70,7 @@ public class Player : MonoBehaviour
                 Vector3 dirToInteractable = Vector3.Normalize(interactableObject.transform.position - transform.position);
                 float dst = Vector3.SqrMagnitude(dirToInteractable);
                 float dot = Vector3.Dot(dirToInteractable, transform.forward);
+                interactableObject.SetGraphicsTransparency(dot);
                 if (dot < closestInteractableDot)
                 {
                     closestInteractableDot = dot;
@@ -127,8 +128,9 @@ public class Player : MonoBehaviour
         {
             currentTile = null;
         }
-        if (other.TryGetComponent(out InteractableObject interactableObject))
+        else if (other.TryGetComponent(out InteractableObject interactableObject))
         {
+            interactableObject.SetGraphicsTransparency(0f);
             interactableObjects.Remove(interactableObject);
         }
     }
