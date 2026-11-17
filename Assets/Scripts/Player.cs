@@ -68,17 +68,17 @@ public class Player : MonoBehaviour
             {
                 InteractableObject interactableObject = interactableObjects[i];
                 Vector3 dirToInteractable = Vector3.Normalize(interactableObject.transform.position - transform.position);
-                float dst = Vector3.SqrMagnitude(dirToInteractable);
+                float dst = System.MathF.Round(Vector3.SqrMagnitude(dirToInteractable), 2);
                 float dot = Vector3.Dot(dirToInteractable, transform.forward);
                 interactableObject.SetGraphicsTransparency(dot);
-                if (dot < closestInteractableDot)
-                {
-                    closestInteractableDot = dot;
-                    targetInteractableIndex = i;
-                }
-                else if (dot == closestInteractableDot && dst < closestInteractableDst)
+                if (dst < closestInteractableDst)
                 {
                     closestInteractableDst = dst;
+                    targetInteractableIndex = i;
+                }
+                else if (dst == closestInteractableDst && dot < closestInteractableDot)
+                {
+                    closestInteractableDot = dot;
                     targetInteractableIndex = i;
                 }
             }

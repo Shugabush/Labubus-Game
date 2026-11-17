@@ -1031,6 +1031,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 4584217439408998987, guid: 4e993311f7cbd2f498427ec7d3cb97a5, type: 3}
+      propertyPath: interactAngleThreshold
+      value: 0.2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
